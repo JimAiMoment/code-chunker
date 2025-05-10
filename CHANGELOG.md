@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2024-06-12
+
+### Fixed
+- Corrected GitHub repository links from jimthebeacon to JimAiMoment
+- Updated PyPI homepage and documentation links
+
 ## [1.1.1] - 2024-06-11
 
 ### Added
@@ -61,8 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Line number tracking for all chunks
 - Export functionality for JavaScript/TypeScript modules
 
-[Unreleased]: https://github.com/jimthebeacon/code-chunker/compare/v1.1.1...HEAD
-[1.1.1]: https://github.com/jimthebeacon/code-chunker/compare/v1.1.0...v1.1.1
-[1.1.0]: https://github.com/jimthebeacon/code-chunker/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/jimthebeacon/code-chunker/compare/v0.1.0...v1.0.0
-[0.1.0]: https://github.com/jimthebeacon/code-chunker/releases/tag/v0.1.0
+[Unreleased]: https://github.com/JimAiMoment/code-chunker/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/JimAiMoment/code-chunker/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/JimAiMoment/code-chunker/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/JimAiMoment/code-chunker/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/JimAiMoment/code-chunker/compare/v0.1.0...v1.0.0
+[0.1.0]: https://github.com/JimAiMoment/code-chunker/releases/tag/v0.1.0

@@ -23,11 +23,11 @@ setup(
     description='A pragmatic multi-language code parser optimized for LLM applications',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/jimthebeacon/code-chunker',
+    url='https://github.com/JimAiMoment/code-chunker',
     project_urls={
-        'Bug Tracker': 'https://github.com/jimthebeacon/code-chunker/issues',
-        'Documentation': 'https://github.com/jimthebeacon/code-chunker#readme',
-        'Source Code': 'https://github.com/jimthebeacon/code-chunker',
+        'Bug Tracker': 'https://github.com/JimAiMoment/code-chunker/issues',
+        'Documentation': 'https://github.com/JimAiMoment/code-chunker#readme',
+        'Source Code': 'https://github.com/JimAiMoment/code-chunker',
     },
     packages=find_packages(),
     classifiers=[
