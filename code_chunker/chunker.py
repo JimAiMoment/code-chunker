@@ -8,7 +8,7 @@ from typing import List, Union, Optional
 
 from .parser import Parser
 from .models import ParseResult, ChunkerConfig
-from .exceptions import ChunkerError, LanguageNotSupportedError
+from .exceptions import BaseError, LanguageNotSupportedError
 
 
 class CodeChunker:

@@ -4,7 +4,7 @@ Tests for Python language processor
 
 import pytest
 
-from code_chunker.languages.python import PythonProcessor
+from code_chunker.languages.python import PythonParser
 from code_chunker.models import ChunkerConfig, ChunkType
 
 
@@ -12,7 +12,7 @@ from code_chunker.models import ChunkerConfig, ChunkType
 def python_processor():
     """創建Python處理器實例"""
     config = ChunkerConfig()
-    return PythonProcessor(config)
+    return PythonParser(config)
 
 
 def test_extract_function(python_processor):

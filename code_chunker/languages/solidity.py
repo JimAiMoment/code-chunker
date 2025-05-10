@@ -5,11 +5,11 @@ Solidity language processor
 import re
 from typing import List, Dict, Pattern
 
-from .base import LanguageProcessor
+from .base import LanguageParser
 from ..models import CodeChunk, Import, ChunkType
 
 
-class SolidityProcessor(LanguageProcessor):
+class SolidityParser(LanguageParser):
     """Solidity語言處理器"""
     
     def _get_patterns(self) -> Dict[str, Pattern]:

@@ -1,6 +1,4 @@
-"""
-Base language processor
-"""
+"""Base language parser"""
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Pattern
@@ -9,8 +7,8 @@ import re
 from ..models import CodeChunk, Import, ParseResult, ChunkerConfig
 
 
-class LanguageProcessor(ABC):
-    """語言處理器基類"""
+class LanguageParser(ABC):
+    """Base class for language parsers"""
     
     def __init__(self, config: ChunkerConfig):
         self.config = config
@@ -18,17 +16,17 @@ class LanguageProcessor(ABC):
     
     @abstractmethod
     def _get_patterns(self) -> Dict[str, Pattern]:
-        """獲取語言特定的正則模式"""
+        """Get language-specific regex patterns"""
         pass
     
     def preprocess(self, code: str) -> str:
-        """預處理程式碼"""
-        # 預設不做處理
+        """Preprocess code"""
+        # Default: no processing
         return code
     
     def postprocess(self, result: ParseResult) -> ParseResult:
-        """後處理結果"""
-        # 過濾低信心度的chunks
+        """Postprocess result"""
+        # Filter out low confidence chunks
         if self.config.confidence_threshold > 0:
             result.chunks = [
                 chunk for chunk in result.chunks 
@@ -39,21 +37,21 @@ class LanguageProcessor(ABC):
     
     @abstractmethod
     def extract_chunks(self, code: str) -> List[CodeChunk]:
-        """提取程式碼塊"""
+        """Extract code chunks"""
         pass
     
     @abstractmethod
     def extract_imports(self, code: str) -> List[Import]:
-        """提取導入語句"""
+        """Extract import statements"""
         pass
     
     def extract_exports(self, code: str) -> List[str]:
-        """提取導出語句"""
-        # 預設返回空列表
+        """Extract export statements"""
+        # Default: return empty list
         return []
     
     def _find_block_end(self, lines: List[str], start_index: int, indent_level: int) -> int:
-        """找到程式碼塊結束位置（用於縮排語言）"""
+        """Find code block end position (for indented languages)"""
         for i in range(start_index + 1, len(lines)):
             line = lines[i]
             if line.strip() == '':
@@ -66,7 +64,7 @@ class LanguageProcessor(ABC):
         return len(lines) - 1
     
     def _find_matching_brace(self, code: str, start_pos: int) -> int:
-        """找到匹配的大括號"""
+        """Find matching brace"""
         brace_count = 1
         pos = start_pos + 1
         

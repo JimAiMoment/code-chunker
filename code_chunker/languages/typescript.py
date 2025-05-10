@@ -2,14 +2,14 @@
 TypeScript language processor
 """
 
-from typing import Dict, Pattern
+from typing import Dict, Pattern, List
 import re
 
-from .javascript import JavaScriptProcessor
+from .javascript import JavaScriptParser
 from ..models import CodeChunk, ChunkType
 
 
-class TypeScriptProcessor(JavaScriptProcessor):
+class TypeScriptParser(JavaScriptParser):
     """TypeScript語言處理器（繼承自JavaScript）"""
     
     def _get_patterns(self) -> Dict[str, Pattern]:

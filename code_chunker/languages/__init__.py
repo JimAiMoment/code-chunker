@@ -2,18 +2,18 @@
 Language processors for code-chunker
 """
 
-from .python import PythonProcessor
-from .javascript import JavaScriptProcessor
-from .typescript import TypeScriptProcessor
-from .solidity import SolidityProcessor
-from .go import GoProcessor
-from .rust import RustProcessor
+from .python import PythonParser
+from .javascript import JavaScriptParser
+from .typescript import TypeScriptParser
+from .solidity import SolidityParser
+from .go import GoParser
+from .rust import RustParser
 
 __all__ = [
-    'PythonProcessor',
-    'JavaScriptProcessor',
-    'TypeScriptProcessor',
-    'SolidityProcessor',
-    'GoProcessor',
-    'RustProcessor'
+    'PythonParser',
+    'JavaScriptParser',
+    'TypeScriptParser',
+    'SolidityParser',
+    'GoParser',
+    'RustParser'
 ]

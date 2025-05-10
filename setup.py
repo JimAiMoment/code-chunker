@@ -18,16 +18,16 @@ long_description = readme_file.read_text(encoding='utf-8')
 setup(
     name='code-chunker',
     version=version,
-    author='Eric Fang',
-    author_email='eric.fang@example.com',
+    author='Jim Fang',
+    author_email='jimthebeacon@gmail.com',
     description='A pragmatic multi-language code parser optimized for LLM applications',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/yourusername/code-chunker',
+    url='https://github.com/jimthebeacon/code-chunker',
     project_urls={
-        'Bug Tracker': 'https://github.com/yourusername/code-chunker/issues',
-        'Documentation': 'https://github.com/yourusername/code-chunker#readme',
-        'Source Code': 'https://github.com/yourusername/code-chunker',
+        'Bug Tracker': 'https://github.com/jimthebeacon/code-chunker/issues',
+        'Documentation': 'https://github.com/jimthebeacon/code-chunker#readme',
+        'Source Code': 'https://github.com/jimthebeacon/code-chunker',
     },
     packages=find_packages(),
     classifiers=[

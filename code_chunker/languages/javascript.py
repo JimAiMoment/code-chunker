@@ -1,50 +1,30 @@
-"""
-JavaScript language processor
-"""
+"""JavaScript language processor"""
 
 import re
 from typing import List, Dict, Pattern
 
-from .base import LanguageProcessor
+from .base import LanguageParser
 from ..models import CodeChunk, Import, ChunkType
 
 
-class JavaScriptProcessor(LanguageProcessor):
-    """JavaScript語言處理器"""
+class JavaScriptParser(LanguageParser):
+    """JavaScript language parser"""
     
-    def _get_patterns(self) -> Dict[str, Pattern]:
+    def _get_patterns(self):
         return {
-            'function': re.compile(
-                r'(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{',
-                re.MULTILINE
-            ),
-            'arrow_function': re.compile(
-                r'(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?\([^)]*\)\s*=>\s*[{(]?',
-                re.MULTILINE
-            ),
-            'class': re.compile(
-                r'class\s+(\w+)(?:\s+extends\s+\w+)?\s*\{',
-                re.MULTILINE
-            ),
-            'method': re.compile(
-                r'(?:async\s+)?(\w+)\s*\([^)]*\)\s*\{',
-                re.MULTILINE
-            ),
-            'import': re.compile(
-                r'import\s+(?:([^{]+)|\{([^}]+)\})\s+from\s+[\'"]([^\'"]+)[\'"]',
-                re.MULTILINE
-            ),
-            'export': re.compile(
-                r'export\s+(?:default\s+)?(?:const|let|var|function|class)?\s*(\w+)',
-                re.MULTILINE
-            ),
+            'function': re.compile(r'function\s+(\w+)\s*\([^)]*\)\s*{'),
+            'arrow_function': re.compile(r'(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>'),
+            'class': re.compile(r'class\s+(\w+)(?:\s+extends\s+\w+)?\s*{'),
+            'import': re.compile(r'import\s+(?:\{[^}]*\}|\w+)\s+from\s+[\'"][^\'"]+[\'"]'),
+            'export': re.compile(r'export\s+(?:default\s+)?(?:class|function|const|let|var)'),
         }
     
     def extract_chunks(self, code: str) -> List[CodeChunk]:
+        """Parse JavaScript code"""
         chunks = []
         
-        # 提取函數
-        for match in self.patterns['function'].finditer(code):
+        # Extract functions
+        for match in self._get_patterns()['function'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
             start_line = code[:start_pos].count('\n')
@@ -65,8 +45,8 @@ class JavaScriptProcessor(LanguageProcessor):
                 confidence=0.95
             ))
         
-        # 提取箭頭函數
-        for match in self.patterns['arrow_function'].finditer(code):
+        # Extract arrow functions
+        for match in self._get_patterns()['arrow_function'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
             start_line = code[:start_pos].count('\n')
@@ -88,8 +68,8 @@ class JavaScriptProcessor(LanguageProcessor):
                 metadata={'is_arrow': True}
             ))
         
-        # 提取類
-        for match in self.patterns['class'].finditer(code):
+        # Extract classes
+        for match in self._get_patterns()['class'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
             start_line = code[:start_pos].count('\n')
@@ -113,9 +93,10 @@ class JavaScriptProcessor(LanguageProcessor):
         return chunks
     
     def extract_imports(self, code: str) -> List[Import]:
+        """Extract import statements"""
         imports = []
         
-        for match in self.patterns['import'].finditer(code):
+        for match in self._get_patterns()['import'].finditer(code):
             default_import = match.group(1)
             named_imports = match.group(2)
             module = match.group(3)
@@ -139,9 +120,10 @@ class JavaScriptProcessor(LanguageProcessor):
         return imports
     
     def extract_exports(self, code: str) -> List[str]:
+        """Extract export statements"""
         exports = []
         
-        for match in self.patterns['export'].finditer(code):
+        for match in self._get_patterns()['export'].finditer(code):
             name = match.group(1)
             if name:
                 exports.append(name)
@@ -149,8 +131,8 @@ class JavaScriptProcessor(LanguageProcessor):
         return exports
     
     def _find_arrow_function_end(self, code: str, start_pos: int) -> int:
-        """找到箭頭函數結束位置"""
-        # 簡化處理：查找分號或換行
+        """Find arrow function end position"""
+        # Simplified: look for semicolon or newline
         pos = start_pos
         in_braces = 0
         

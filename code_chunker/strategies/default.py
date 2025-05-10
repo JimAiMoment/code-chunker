@@ -9,44 +9,55 @@ from ..models import CodeChunk, ChunkerConfig
 
 
 class DefaultChunkingStrategy(ChunkingStrategy):
-    """預設分塊策略"""
+    """Default chunking strategy"""
     
     def __init__(self, config: ChunkerConfig):
         self.config = config
     
     def chunk(self, code: str, language: str) -> List[CodeChunk]:
-        """使用預設策略分塊"""
-        # 這個方法將在parser中被覆寫
+        """Chunk code using default strategy"""
+        # This method will be overridden in the parser
         return []
     
     def should_split(self, chunk: CodeChunk) -> bool:
-        """決定是否應該分割chunk"""
-        return len(chunk.code) > self.config.max_chunk_size
+        """Determine if chunk should be split"""
+        return False
     
-    def merge_chunks(self, chunks: List[CodeChunk]) -> List[CodeChunk]:
-        """合併太小的chunks"""
+    def merge_small_chunks(self, chunks: List[CodeChunk]) -> List[CodeChunk]:
+        """Merge chunks that are too small"""
         if not chunks:
             return []
         
+        # Merge chunks
         merged = []
         current = chunks[0]
         
-        for chunk in chunks[1:]:
-            if (len(current.code) + len(chunk.code) < self.config.max_chunk_size and
-                chunk.start_line - current.end_line <= 1):
-                # 合併chunks
-                current = CodeChunk(
-                    type=current.type,
-                    name=f"{current.name}_{chunk.name}" if current.name and chunk.name else None,
-                    code=current.code + '\n' + chunk.code,
-                    start_line=current.start_line,
-                    end_line=chunk.end_line,
-                    language=current.language,
-                    confidence=min(current.confidence, chunk.confidence)
-                )
+        for next_chunk in chunks[1:]:
+            if self._should_merge(current, next_chunk):
+                current = self._merge_chunks(current, next_chunk)
             else:
                 merged.append(current)
-                current = chunk
+                current = next_chunk
         
         merged.append(current)
         return merged
+    
+    def _should_merge(self, chunk1: CodeChunk, chunk2: CodeChunk) -> bool:
+        """Determine if two chunks should be merged"""
+        return (
+            chunk1.type == chunk2.type and
+            chunk2.start_line - chunk1.end_line <= 1
+        )
+    
+    def _merge_chunks(self, chunk1: CodeChunk, chunk2: CodeChunk) -> CodeChunk:
+        """Merge two chunks"""
+        return CodeChunk(
+            type=chunk1.type,
+            name=chunk1.name,
+            code=chunk1.code + '\n' + chunk2.code,
+            start_line=chunk1.start_line,
+            end_line=chunk2.end_line,
+            language=chunk1.language,
+            confidence=min(chunk1.confidence, chunk2.confidence),
+            metadata={**chunk1.metadata, **chunk2.metadata}
+        )

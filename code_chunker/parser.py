@@ -3,78 +3,67 @@ Core parser module for code-chunker
 """
 
 import re
-from typing import Dict, Type, List
+from typing import Dict, Type, List, Optional
 
 from .models import ParseResult, CodeChunk, ChunkerConfig
-from .languages.base import LanguageProcessor
-from .exceptions import ParserError
+from .languages.base import LanguageParser
+from .exceptions import ParserError, LanguageNotSupportedError
+from .strategies.base import ChunkingStrategy
 
 
 class Parser:
-    """核心解析器"""
+    """Core parser"""
     
-    def __init__(self, config: ChunkerConfig):
+    def __init__(self, config=None):
         self.config = config
-        self._processors: Dict[str, LanguageProcessor] = {}
-        self._load_processors()
+        self.language_parsers: Dict[str, Type[LanguageParser]] = {}
+        self.chunking_strategy: Optional[ChunkingStrategy] = None
+        self.load_language_parsers()  # 自动加载语言解析器
     
-    def _load_processors(self):
-        """載入語言處理器"""
-        from .languages import (
-            PythonProcessor,
-            JavaScriptProcessor,
-            TypeScriptProcessor,
-            SolidityProcessor,
-            GoProcessor,
-            RustProcessor
-        )
+    def register_language(self, language: str, parser_class: Type[LanguageParser]):
+        """Register a language parser"""
+        self.language_parsers[language] = parser_class
+    
+    def load_language_parsers(self):
+        """Load language processors"""
+        from .languages import python, javascript, typescript, go, rust, solidity
         
-        processors = {
-            'python': PythonProcessor,
-            'javascript': JavaScriptProcessor,
-            'typescript': TypeScriptProcessor,
-            'solidity': SolidityProcessor,
-            'go': GoProcessor,
-            'rust': RustProcessor,
-        }
-        
-        for lang, processor_class in processors.items():
-            self._processors[lang] = processor_class(self.config)
+        self.register_language('python', python.PythonParser)
+        self.register_language('javascript', javascript.JavaScriptParser)
+        self.register_language('typescript', typescript.TypeScriptParser)
+        self.register_language('go', go.GoParser)
+        self.register_language('rust', rust.RustParser)
+        self.register_language('solidity', solidity.SolidityParser)
     
     def is_language_supported(self, language: str) -> bool:
-        """檢查語言是否支援"""
-        return language in self._processors
+        """Check if language is supported"""
+        return language in self.language_parsers
     
     def parse(self, code: str, language: str) -> ParseResult:
-        """解析程式碼"""
-        processor = self._processors.get(language)
-        if not processor:
-            raise ParserError(f"No processor found for language: {language}")
+        """Parse code"""
+        if not self.is_language_supported(language):
+            raise LanguageNotSupportedError(f"Language not supported: {language}")
         
-        try:
-            # 預處理
-            processed_code = processor.preprocess(code)
-            
-            # 提取chunks
-            chunks = processor.extract_chunks(processed_code)
-            
-            # 提取imports
-            imports = processor.extract_imports(processed_code)
-            
-            # 提取exports
-            exports = processor.extract_exports(processed_code)
-            
-            # 後處理
-            result = ParseResult(
-                language=language,
-                file_path=None,
-                chunks=chunks,
-                imports=imports,
-                exports=exports,
-                raw_code=code
-            )
-            
-            return processor.postprocess(result)
-            
-        except Exception as e:
-            raise ParserError(f"Error parsing {language} code: {str(e)}")
+        # Preprocessing
+        parser_class = self.language_parsers[language]
+        parser = parser_class(self.config) if self.config else parser_class()
+        
+        # Extract chunks
+        chunks = parser.parse(code)
+        
+        # Extract imports
+        imports = parser.extract_imports(code)
+        
+        # Extract exports
+        exports = parser.extract_exports(code)
+        
+        # Post-processing
+        if self.chunking_strategy:
+            chunks = self.chunking_strategy.chunk(code, language)
+        
+        return ParseResult(
+            chunks=chunks,
+            imports=imports,
+            exports=exports,
+            language=language
+        )

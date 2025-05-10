@@ -1,23 +1,21 @@
-"""
-Custom exceptions for code-chunker
-"""
+"""Base exception classes"""
 
 
-class ChunkerError(Exception):
-    """基礎異常類"""
+class BaseError(Exception):
+    """Base exception class"""
     pass
 
 
-class LanguageNotSupportedError(ChunkerError):
-    """語言不支援異常"""
+class LanguageNotSupportedError(BaseError):
+    """Exception for unsupported language"""
     pass
 
 
-class ParserError(ChunkerError):
-    """解析錯誤異常"""
+class ParserError(BaseError):
+    """Exception for parsing errors"""
     pass
 
 
-class FileProcessingError(ChunkerError):
-    """檔案處理錯誤"""
+class FileProcessingError(BaseError):
+    """Exception for file processing errors"""
     pass

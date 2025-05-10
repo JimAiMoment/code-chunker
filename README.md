@@ -67,13 +67,65 @@ chunker = CodeChunker(config=config)
 - Go (.go)
 - Rust (.rs)
 
-## Advanced Usage
+## Examples
 
-For more advanced usage examples, check out the `examples/` directory:
+The `examples/` directory contains several examples demonstrating different features:
 
-- `basic_usage.py`: Simple parsing examples
-- `advanced_usage.py`: Custom configuration and analysis
-- `rag_integration.py`: Integration with RAG systems
+### Basic Usage
+
+Simple parsing examples:
+
+```bash
+python examples/basic_usage.py
+```
+
+### Advanced Usage
+
+Custom configuration and analysis:
+
+```bash
+python examples/advanced_usage.py
+```
+
+### RAG Integration
+
+Integration with RAG systems:
+
+```bash
+python examples/rag_integration.py
+```
+
+### Edge Cases
+
+Testing various edge cases across languages:
+
+```bash
+python examples/edge_cases.py
+```
+
+### Performance Analysis
+
+Analyze parsing performance:
+
+```bash
+python examples/performance_analysis.py
+```
+
+### Code Quality Analysis
+
+Analyze code quality metrics:
+
+```bash
+python examples/quality_analysis.py <file_path>
+```
+
+### Visualization
+
+Generate code structure visualization:
+
+```bash
+python examples/visualization.py <file_path>
+```
 
 ## API Reference
 
@@ -119,6 +171,12 @@ Represents a piece of code.
 - `confidence: float`: Confidence score (0-1)
 - `metadata: Dict[str, Any]`: Additional metadata
 
+## Dependencies
+
+- For basic usage: No external dependencies
+- For performance analysis: `psutil`
+- For visualization: Modern web browser to view generated HTML
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -150,10 +208,7 @@ If you find this project helpful, consider supporting its development:
 - ⭐ Star this repository
 - 🐛 Report bugs and suggest features
 - 🤝 Submit pull requests
-- 💰 [Support on PayPal](https://paypal.me/ericfang)
-- ₿ BTC: `bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
-- Ξ ETH: `0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
-
+- 💰 EVM(ETH, ARB, BNB, OP..etc): `0x8f74959530dba14394b27faac92955aa96927e8b`
 ## Acknowledgments
 
 Thanks to all contributors and the open-source community for their support.

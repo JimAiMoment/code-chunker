@@ -4,7 +4,7 @@ Tests for JavaScript language processor
 
 import pytest
 
-from code_chunker.languages.javascript import JavaScriptProcessor
+from code_chunker.languages.javascript import JavaScriptParser
 from code_chunker.models import ChunkerConfig, ChunkType
 
 
@@ -12,7 +12,7 @@ from code_chunker.models import ChunkerConfig, ChunkType
 def js_processor():
     """創建JavaScript處理器實例"""
     config = ChunkerConfig()
-    return JavaScriptProcessor(config)
+    return JavaScriptParser(config)
 
 
 def test_extract_function(js_processor):
