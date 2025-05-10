@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2024-06-11
+
+### Added
+- Added support for Python 3.13 and 3.14
+- Updated CI workflow to test on Python 3.13 and 3.14
+
+### Changed
+- Updated development tools configuration for newer Python versions
+
 ## [1.1.0] - 2024-06-10
 
 ### Added
@@ -52,7 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Line number tracking for all chunks
 - Export functionality for JavaScript/TypeScript modules
 
-[Unreleased]: https://github.com/jimthebeacon/code-chunker/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/jimthebeacon/code-chunker/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/jimthebeacon/code-chunker/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/jimthebeacon/code-chunker/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/jimthebeacon/code-chunker/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/jimthebeacon/code-chunker/releases/tag/v0.1.0
