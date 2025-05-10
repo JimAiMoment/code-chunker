@@ -19,11 +19,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
 [tool.black]
 line-length = 88
-target-version = ['py311', 'py312']
+target-version = ['py311', 'py312', 'py313', 'py314']
 
 [tool.mypy]
 python_version = "3.11"
