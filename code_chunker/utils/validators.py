@@ -14,7 +14,7 @@ SUPPORTED_LANGUAGES: Set[str] = {
 
 
 def validate_config(config: ChunkerConfig) -> None:
-    """驗證配置"""
+    """Validate configuration"""
     if config.max_chunk_size <= 0:
         raise ChunkerError("max_chunk_size must be positive")
     
@@ -32,6 +32,6 @@ def validate_config(config: ChunkerConfig) -> None:
 
 
 def validate_language(language: str) -> None:
-    """驗證語言是否支援"""
+    """Validate if language is supported"""
     if language not in SUPPORTED_LANGUAGES:
         raise ChunkerError(f"Language '{language}' is not supported. Supported languages: {', '.join(SUPPORTED_LANGUAGES)}")

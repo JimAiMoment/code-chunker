@@ -17,9 +17,9 @@ class Parser:
     def __init__(self, config=None):
         self.config = config
         self.language_parsers: Dict[str, Type[LanguageParser]] = {}
-        self._processors: Dict[str, LanguageParser] = {}  # 添加_processors属性
+        self._processors: Dict[str, LanguageParser] = {}  # Add _processors attribute
         self.chunking_strategy: Optional[ChunkingStrategy] = None
-        self.load_language_parsers()  # 自动加载语言解析器
+        self.load_language_parsers()  # Automatically load language parsers
     
     def register_language(self, language: str, parser_class: Type[LanguageParser]):
         """Register a language parser"""
@@ -36,7 +36,7 @@ class Parser:
         self.register_language('rust', rust.RustParser)
         self.register_language('solidity', solidity.SolidityParser)
         
-        # 初始化处理器实例
+        # Initialize processor instances
         for lang, parser_class in self.language_parsers.items():
             self._processors[lang] = parser_class(self.config) if self.config else parser_class()
     
@@ -50,7 +50,7 @@ class Parser:
             if not self.is_language_supported(language):
                 raise ParserError(f"Language not supported: {language}")
             
-            # 特殊处理测试用例中的无效代码
+            # Special handling for invalid code in test cases
             if language == 'python' and 'def function(:' in code:
                 raise ParserError("Invalid Python code: Syntax error in function definition")
             
@@ -80,7 +80,7 @@ class Parser:
                 raw_code=code
             )
         except Exception as e:
-            # 捕获解析过程中的异常并转换为ParserError
+            # Capture exceptions during parsing and convert to ParserError
             if isinstance(e, ParserError):
                 raise e
             raise ParserError(f"Error parsing {language} code: {str(e)}") from e

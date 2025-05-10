@@ -110,24 +110,24 @@ class IncrementalParser:
         Returns:
             List of updated chunks
         """
-        # 如果没有受影响的块或变更，直接返回空列表
+        # If there are no affected chunks or changes, return an empty list
         if not chunks and not changes:
             return []
         
-        # 计算变更后的行号偏移
+        # Calculate line number offsets after changes
         line_offsets = self._calculate_line_offsets(changes)
         
-        # 找出受影响的行范围
+        # Find the range of affected lines
         affected_lines = set()
         for start_line, end_line, new_content in changes:
-            # 添加受影响的行
+            # Add affected lines
             for line in range(start_line, end_line + 1):
                 affected_lines.add(line)
         
-        # 调整未受影响的块的行号
+        # Adjust line numbers for unaffected chunks
         adjusted_chunks = []
         for chunk in chunks:
-            # 深拷贝块以避免修改原始数据
+            # Deep copy chunk to avoid modifying original data
             adjusted_chunk = CodeChunk(
                 type=chunk.type,
                 name=chunk.name,
@@ -139,20 +139,20 @@ class IncrementalParser:
                 metadata=chunk.metadata.copy() if chunk.metadata else {}
             )
             
-            # 应用行号偏移
+            # Apply line number offsets
             for start_line, end_line, new_content in changes:
                 new_lines_count = new_content.count('\n') + 1 if new_content else 0
                 line_diff = new_lines_count - (end_line - start_line)
                 
-                # 如果块在变更之后，调整其行号
+                # If chunk is affected, adjust its line numbers
                 if adjusted_chunk.start_line > end_line:
                     adjusted_chunk.start_line += line_diff
                     adjusted_chunk.end_line += line_diff
-                # 如果块跨越变更区域，调整其结束行号
+                # If chunk spans change area, adjust its end line number
                 elif adjusted_chunk.start_line <= start_line and adjusted_chunk.end_line >= end_line:
                     adjusted_chunk.end_line += line_diff
             
-            # 检查块是否受到影响
+            # Check if chunk is affected
             is_affected = False
             for line in affected_lines:
                 if adjusted_chunk.start_line <= line <= adjusted_chunk.end_line:
@@ -162,52 +162,52 @@ class IncrementalParser:
             if not is_affected:
                 adjusted_chunks.append(adjusted_chunk)
         
-        # 如果影响了超过50%的代码块，直接重新解析整个文件
+        # If more than 50% of code chunks are affected, reparse entire file
         if len(chunks) - len(adjusted_chunks) > len(chunks) * 0.5:
             result = self.chunker.parse(updated_code, language)
             result.file_path = file_path
             return result.chunks
         
-        # 解析整个文件，但只保留新的或修改过的块
+        # Reparse entire file, but only keep new or modified chunks
         new_result = self.chunker.parse(updated_code, language)
         new_result.file_path = file_path
         
-        # 将新解析的块与未受影响的块合并
-        merged_chunks = list(adjusted_chunks)  # 复制未受影响的块列表
+        # Merge new parsed chunks with unaffected chunks
+        merged_chunks = list(adjusted_chunks)  # Copy unaffected chunks list
         
-        # 检查新解析的块是否是新增的或修改过的
+        # Check if new parsed chunks are new or modified
         for new_chunk in new_result.chunks:
-            # 检查是否为新块
+            # Check if new chunk
             is_new = True
             for old_chunk in adjusted_chunks:
-                # 如果名称、类型和位置相似，则认为是相同的块
+                # If name, type, and location are similar, consider them same chunk
                 if (old_chunk.name == new_chunk.name and 
                     old_chunk.type == new_chunk.type and 
-                    abs(old_chunk.start_line - new_chunk.start_line) <= 3):  # 允许小范围的行号变化
+                    abs(old_chunk.start_line - new_chunk.start_line) <= 3):  # Allow small range of line number changes
                     is_new = False
                     break
             
             if is_new:
-                # 检查是否在受影响的区域内
+                # Check if in affected area
                 is_in_affected_area = False
                 for line in affected_lines:
                     if new_chunk.start_line <= line <= new_chunk.end_line:
                         is_in_affected_area = True
                         break
                 
-                # 如果是新块或在受影响区域内，添加到结果中
+                # If new chunk or in affected area, add to result
                 if is_in_affected_area:
                     merged_chunks.append(new_chunk)
         
-        # 按照起始行排序
+        # Sort by start line
         merged_chunks.sort(key=lambda x: x.start_line)
         
-        # 移除重复的块
+        # Remove duplicate chunks
         unique_chunks = []
         seen_signatures = set()
         
         for chunk in merged_chunks:
-            # 创建块的唯一签名
+            # Create unique signature for chunk
             signature = (chunk.name, chunk.type, chunk.start_line)
             if signature not in seen_signatures:
                 seen_signatures.add(signature)
@@ -216,32 +216,32 @@ class IncrementalParser:
         return unique_chunks
     
     def _calculate_line_offsets(self, changes: List[Tuple[int, int, str]]) -> Dict[int, int]:
-        """计算每行的偏移量
+        """Calculate line number offsets
         
         Args:
-            changes: 变更列表
+            changes: Change list
             
         Returns:
-            行号偏移字典
+            Line number offset dictionary
         """
         offsets = {}
         
-        # 按起始行排序变更
+        # Sort changes by start line
         sorted_changes = sorted(changes, key=lambda x: x[0])
         
         current_offset = 0
         for start_line, end_line, new_content in sorted_changes:
-            # 计算新内容的行数
+            # Calculate new content line count
             new_lines_count = new_content.count('\n') + 1 if new_content else 0
-            # 计算原始内容的行数
+            # Calculate original content line count
             original_lines_count = end_line - start_line + 1
-            # 计算行数差异
+            # Calculate line count difference
             line_diff = new_lines_count - original_lines_count
             
-            # 更新当前偏移量
+            # Update current offset
             current_offset += line_diff
             
-            # 记录此变更后的行号偏移
+            # Record line number offset after this change
             offsets[end_line] = current_offset
         
         return offsets
@@ -258,11 +258,11 @@ class IncrementalParser:
         Returns:
             Merged parse result
         """
-        # 更新导入和导出信息
+        # Update imports and exports
         updated_imports = self._update_imports(original.imports, updated_chunks, updated_code)
         updated_exports = self._update_exports(original.exports, updated_chunks, updated_code)
         
-        # 创建新的元数据，保留原始元数据的信息
+        # Create new metadata, retain original metadata information
         metadata = original.metadata.copy() if original.metadata else {}
         metadata.update({
             'incremental_update': True,
@@ -318,23 +318,23 @@ class IncrementalParser:
         Returns:
             Updated imports
         """
-        # 检查是否有导入块被修改
+        # Check if any import chunks are modified
         import_chunks = [c for c in updated_chunks if c.type == ChunkType.IMPORT]
         
         if not import_chunks and not any(c.code and 'import' in c.code for c in updated_chunks):
-            # 如果没有导入块被修改，保留原始导入
+            # If no import chunks are modified, retain original imports
             return original_imports
         
-        # 使用语言特定的解析器重新解析导入
+        # Reparse imports using language-specific parser
         language = updated_chunks[0].language if updated_chunks else None
         if not language:
             return original_imports
         
-        # 使用chunker来解析更新后的代码并提取导入
+        # Use chunker to reparse updated code and extract imports
         result = self.chunker.parse(updated_code, language)
         updated_imports = result.imports
         
-        # 如果没有找到导入，保留原始导入
+        # If no imports found, retain original imports
         if not updated_imports:
             return original_imports
         
@@ -352,23 +352,23 @@ class IncrementalParser:
         Returns:
             Updated exports
         """
-        # 检查是否有导出块被修改
+        # Check if any export chunks are modified
         export_chunks = [c for c in updated_chunks if c.type == ChunkType.EXPORT]
         
         if not export_chunks and not any(c.code and 'export' in c.code for c in updated_chunks):
-            # 如果没有导出块被修改，保留原始导出
+            # If no export chunks are modified, retain original exports
             return original_exports
         
-        # 使用语言特定的解析器重新解析导出
+        # Reparse exports using language-specific parser
         language = updated_chunks[0].language if updated_chunks else None
         if not language:
             return original_exports
         
-        # 使用chunker来解析更新后的代码并提取导出
+        # Use chunker to reparse updated code and extract exports
         result = self.chunker.parse(updated_code, language)
         updated_exports = result.exports
         
-        # 如果没有找到导出，保留原始导出
+        # If no exports found, retain original exports
         if not updated_exports:
             return original_exports
         

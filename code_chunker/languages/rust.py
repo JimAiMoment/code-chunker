@@ -33,17 +33,17 @@ class RustParser(LanguageParser):
         brace_count = 0
         pos = start_pos
         
-        # 找到第一个左花括号
+        # Find the first left brace
         while pos < len(code) and code[pos] != '{':
             pos += 1
             
         if pos >= len(code):
-            return start_pos  # 没有找到左花括号，返回开始位置
+            return start_pos  # No left brace found, return start position
             
-        brace_count = 1  # 找到第一个左花括号
-        pos += 1  # 移动到下一个字符
+        brace_count = 1  # Found the first left brace
+        pos += 1  # Move to next character
         
-        # 寻找匹配的右花括号
+        # Find matching right brace
         while pos < len(code) and brace_count > 0:
             if code[pos] == '{':
                 brace_count += 1
@@ -52,9 +52,9 @@ class RustParser(LanguageParser):
             pos += 1
             
             if pos >= len(code):
-                return len(code) - 1  # 到达代码末尾，返回最后一个字符位置
+                return len(code) - 1  # Reached end of code, return last character position
                 
-        return pos - 1  # 返回右花括号位置
+        return pos - 1  # Return right brace position
     
     def extract_chunks(self, code: str) -> List[CodeChunk]:
         """Parse Rust code"""

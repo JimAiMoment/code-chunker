@@ -33,7 +33,7 @@ class JavaScriptParser(LanguageParser):
             start_pos = match.start()
             start_line = code[:start_pos].count('\n')
             
-            # 找到函數結束（匹配大括號）
+            # Find function end (matching braces)
             end_pos = self._find_matching_brace(code, match.end() - 1)
             end_line = code[:end_pos].count('\n')
             
@@ -55,7 +55,7 @@ class JavaScriptParser(LanguageParser):
             start_pos = match.start()
             start_line = code[:start_pos].count('\n')
             
-            # 找到箭頭函數結束
+            # Find arrow function end
             end_pos = self._find_arrow_function_end(code, match.end())
             end_line = code[:end_pos].count('\n')
             
@@ -78,7 +78,7 @@ class JavaScriptParser(LanguageParser):
             start_pos = match.start()
             start_line = code[:start_pos].count('\n')
             
-            # 找到類結束
+            # Find class end
             end_pos = self._find_matching_brace(code, match.end() - 1)
             end_line = code[:end_pos].count('\n')
             
@@ -100,25 +100,25 @@ class JavaScriptParser(LanguageParser):
         """Extract import statements"""
         imports = []
         
-        # 正则表达式匹配不同类型的导入
+        # Regular expressions matching different types of imports
         import_patterns = [
-            # 默认导入: import React from 'react'
+            # Default import: import React from 'react'
             re.compile(r'import\s+(\w+)\s+from\s+[\'"]([^\'"]*)[\'"]\s*;?'),
             
-            # 命名导入: import { useState, useEffect } from 'react'
+            # Named import: import { useState, useEffect } from 'react'
             re.compile(r'import\s+\{([^}]*)\}\s+from\s+[\'"]([^\'"]*)[\'"]\s*;?'),
             
-            # 命名空间导入: import * as utils from './utils'
+            # Namespace import: import * as utils from './utils'
             re.compile(r'import\s+\*\s+as\s+(\w+)\s+from\s+[\'"]([^\'"]*)[\'"]\s*;?'),
             
-            # 简单导入: import './styles.css'
+            # Simple import: import './styles.css'
             re.compile(r'import\s+[\'"]([^\'"]*)[\'"]'),
         ]
         
-        # 处理每种导入模式
+        # Process each import pattern
         for pattern in import_patterns:
             for match in pattern.finditer(code):
-                if pattern == import_patterns[0]:  # 默认导入
+                if pattern == import_patterns[0]:  # Default import
                     name = match.group(1)
                     module = match.group(2)
                     imports.append(Import(
@@ -126,10 +126,10 @@ class JavaScriptParser(LanguageParser):
                         names=[name],
                         line_number=code[:match.start()].count('\n')
                     ))
-                elif pattern == import_patterns[1]:  # 命名导入
+                elif pattern == import_patterns[1]:  # Named import
                     names_str = match.group(1)
                     module = match.group(2)
-                    # 处理命名导入中的别名
+                    # Process named import aliases
                     names = []
                     for name in names_str.split(','):
                         name = name.strip()
@@ -143,7 +143,7 @@ class JavaScriptParser(LanguageParser):
                         names=names,
                         line_number=code[:match.start()].count('\n')
                     ))
-                elif pattern == import_patterns[2]:  # 命名空间导入
+                elif pattern == import_patterns[2]:  # Namespace import
                     name = match.group(1)
                     module = match.group(2)
                     imports.append(Import(
@@ -152,9 +152,9 @@ class JavaScriptParser(LanguageParser):
                         line_number=code[:match.start()].count('\n'),
                         alias='*'
                     ))
-                else:  # 简单导入
+                else:  # Simple import
                     module = match.group(1)
-                    # 对CSS文件使用特殊处理
+                    # Special handling for CSS files
                     name = 'css' if module.endswith('.css') else 'module'
                     imports.append(Import(
                         module=module,
@@ -191,7 +191,7 @@ class JavaScriptParser(LanguageParser):
             elif code[pos] == ';' and in_braces == 0:
                 return pos + 1
             elif code[pos] == '\n' and in_braces == 0:
-                # 檢查是否為單行箭頭函數
+                # Check if it's a single-line arrow function
                 next_line_start = pos + 1
                 if next_line_start < len(code):
                     next_line = code[next_line_start:].split('\n')[0]
