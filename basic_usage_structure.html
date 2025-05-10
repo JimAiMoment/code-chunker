@@ -1,0 +1,36 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Code Structure Visualization</title>
+        <script type="module">
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+    </head>
+    <body>
+        <h1>Code Structure: basic_usage.py</h1>
+        <div class="mermaid">
+graph TD
+    node1[MathUtils]
+    node2[is_prime]
+    node3[calculate_fibonacci]
+    node4[is_prime]
+    classDef classStyle fill:#f9d71c,stroke:#333,stroke-width:2px;
+    classDef functionStyle fill:#7dd3c0,stroke:#333,stroke-width:2px;
+    classDef methodStyle fill:#93c5fd,stroke:#333,stroke-width:2px;
+    class node1 classStyle
+    class node2 methodStyle
+    class node3,node4 functionStyle
+        </div>
+        
+        <h2>Statistics</h2>
+        <ul>
+            <li>Total chunks: 4</li>
+            <li>Functions: 2</li>
+            <li>Classes: 1</li>
+            <li>Methods: 1</li>
+        </ul>
+    </body>
+    </html>
+    

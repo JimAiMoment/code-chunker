@@ -10,8 +10,7 @@ from ..models import CodeChunk, Import, ChunkType
 class RustParser(LanguageParser):
     """Rust language processor"""
     
-    @property
-    def patterns(self) -> Dict[str, Pattern]:
+    def _get_patterns(self) -> Dict[str, Pattern]:
         """Get language-specific regex patterns"""
         return {
             'function': re.compile(r'fn\s+(\w+)\s*\([^)]*\)\s*(->\s*[^\s{]+)?\s*{'),
@@ -29,15 +28,43 @@ class RustParser(LanguageParser):
             ),
         }
     
+    def _find_matching_brace(self, code: str, start_pos: int) -> int:
+        """Find the matching brace for a given position"""
+        brace_count = 0
+        pos = start_pos
+        
+        # 找到第一个左花括号
+        while pos < len(code) and code[pos] != '{':
+            pos += 1
+            
+        if pos >= len(code):
+            return start_pos  # 没有找到左花括号，返回开始位置
+            
+        brace_count = 1  # 找到第一个左花括号
+        pos += 1  # 移动到下一个字符
+        
+        # 寻找匹配的右花括号
+        while pos < len(code) and brace_count > 0:
+            if code[pos] == '{':
+                brace_count += 1
+            elif code[pos] == '}':
+                brace_count -= 1
+            pos += 1
+            
+            if pos >= len(code):
+                return len(code) - 1  # 到达代码末尾，返回最后一个字符位置
+                
+        return pos - 1  # 返回右花括号位置
+    
     def extract_chunks(self, code: str) -> List[CodeChunk]:
         """Parse Rust code"""
         chunks = []
         
         # Extract functions
-        for match in self.patterns['function'].finditer(code):
+        for match in self._get_patterns()['function'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
-            end_pos = self.find_matching_brace(code, start_pos)
+            end_pos = self._find_matching_brace(code, start_pos)
             
             if end_pos > start_pos:
                 chunk_code = code[start_pos:end_pos + 1]
@@ -52,14 +79,14 @@ class RustParser(LanguageParser):
                 ))
         
         # Extract structs
-        for match in self.patterns['struct'].finditer(code):
+        for match in self._get_patterns()['struct'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
             # Determine if tuple struct or regular struct
             if match.group(2) == '(':  # Tuple struct, find semicolon
                 end_pos = code.find(';', start_pos)
             else:  # Regular struct, find matching brace
-                end_pos = self.find_matching_brace(code, start_pos)
+                end_pos = self._find_matching_brace(code, start_pos)
             
             if end_pos > start_pos:
                 chunk_code = code[start_pos:end_pos + 1]
@@ -74,10 +101,10 @@ class RustParser(LanguageParser):
                 ))
         
         # Extract enums
-        for match in self.patterns['enum'].finditer(code):
+        for match in self._get_patterns()['enum'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
-            end_pos = self.find_matching_brace(code, start_pos)
+            end_pos = self._find_matching_brace(code, start_pos)
             
             if end_pos > start_pos:
                 chunk_code = code[start_pos:end_pos + 1]
@@ -92,10 +119,10 @@ class RustParser(LanguageParser):
                 ))
         
         # Extract traits
-        for match in self.patterns['trait'].finditer(code):
+        for match in self._get_patterns()['trait'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
-            end_pos = self.find_matching_brace(code, start_pos)
+            end_pos = self._find_matching_brace(code, start_pos)
             
             if end_pos > start_pos:
                 chunk_code = code[start_pos:end_pos + 1]
@@ -110,10 +137,10 @@ class RustParser(LanguageParser):
                 ))
         
         # Extract impl blocks
-        for match in self.patterns['impl'].finditer(code):
+        for match in self._get_patterns()['impl'].finditer(code):
             name = match.group(1)
             start_pos = match.start()
-            end_pos = self.find_matching_brace(code, start_pos)
+            end_pos = self._find_matching_brace(code, start_pos)
             
             if end_pos > start_pos:
                 chunk_code = code[start_pos:end_pos + 1]
@@ -132,7 +159,7 @@ class RustParser(LanguageParser):
     def extract_imports(self, code: str) -> List[Import]:
         imports = []
         
-        for match in self.patterns['use'].finditer(code):
+        for match in self._get_patterns()['use'].finditer(code):
             import_path = match.group(1)
             line_number = code[:match.start()].count('\n')
             
@@ -143,3 +170,7 @@ class RustParser(LanguageParser):
             ))
         
         return imports
+
+    def parse(self, code: str) -> List[CodeChunk]:
+        """Parse Rust code"""
+        return self.extract_chunks(code)

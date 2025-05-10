@@ -9,6 +9,11 @@ A pragmatic multi-language code parser optimized for LLM applications and RAG sy
 - **Lightweight**: Minimal dependencies, fast parsing
 - **Configurable**: Adjust chunk sizes, confidence thresholds, and more
 - **Easy to use**: Simple API with both file and directory parsing
+- **Incremental parsing**: Efficiently update parse results when code changes
+- **Enhanced language support**:
+  - **TypeScript/React**: Component, Hook, and Context detection
+  - **Solidity**: Smart contract metadata extraction (visibility, modifiers, payable)
+  - **Go**: Concurrency pattern detection (goroutines, channels, mutexes)
 
 ## Installation
 
@@ -34,7 +39,7 @@ result = chunker.parse(code, language='python')
 
 # Print the chunks
 for chunk in result.chunks:
-    print(f"{chunk.type}: {chunk.name}")
+    print(f"{chunk.type.value}: {chunk.name} (lines {chunk.start_line}-{chunk.end_line})")
 
 # Parse a file
 result = chunker.parse_file('example.py')
@@ -56,6 +61,92 @@ config = ChunkerConfig(
 )
 
 chunker = CodeChunker(config=config)
+```
+
+## Incremental Parsing
+
+Incremental parsing allows you to efficiently update parse results when code changes, without reparsing the entire file.
+
+```python
+from code_chunker import CodeChunker, IncrementalParser
+
+# Initialize the incremental parser
+incremental_parser = IncrementalParser()
+
+# First parse (full parse)
+result1 = incremental_parser.full_parse("path/to/file.py")
+
+# After file changes, perform an incremental parse
+result2 = incremental_parser.incremental_parse("path/to/file.py")
+
+# Compare the results
+print(f"Full parse chunks: {len(result1.chunks)}")
+print(f"Incremental parse chunks: {len(result2.chunks)}")
+```
+
+## Enhanced Language Support
+
+### TypeScript/React Support
+
+Code Chunker provides specialized support for React components, hooks, and contexts:
+
+```python
+from code_chunker import CodeChunker, ChunkerConfig, get_config_for_use_case
+
+# Get React-optimized configuration
+config = ChunkerConfig(**get_config_for_use_case('typescript', 'react'))
+chunker = CodeChunker(config=config)
+
+# Parse React component
+result = chunker.parse(react_code, language='typescript')
+
+# Filter for React components
+components = [chunk for chunk in result.chunks if chunk.type.value == 'component']
+for component in components:
+    print(f"Component: {component.name} (type: {component.metadata.get('component_type')})")
+```
+
+### Solidity Smart Contract Support
+
+Enhanced metadata extraction for smart contracts:
+
+```python
+from code_chunker import CodeChunker, ChunkerConfig, get_config_for_use_case
+
+# Get Solidity-optimized configuration
+config = ChunkerConfig(**get_config_for_use_case('solidity', 'contract'))
+chunker = CodeChunker(config=config)
+
+# Parse Solidity contract
+result = chunker.parse(contract_code, language='solidity')
+
+# Find payable functions
+payable_functions = [
+    chunk for chunk in result.chunks 
+    if chunk.type.value == 'function' and chunk.metadata.get('is_payable', False)
+]
+```
+
+### Go Concurrency Pattern Detection
+
+Automatically detect concurrency patterns in Go code:
+
+```python
+from code_chunker import CodeChunker, ChunkerConfig, get_config_for_use_case
+
+# Get Go-optimized configuration
+config = ChunkerConfig(**get_config_for_use_case('go', 'performance'))
+chunker = CodeChunker(config=config)
+
+# Parse Go code
+result = chunker.parse(go_code, language='go')
+
+# Find functions with goroutines
+concurrent_funcs = [
+    chunk for chunk in result.chunks 
+    if chunk.type.value in ['function', 'method'] 
+    and 'goroutines' in chunk.metadata.get('concurrency_patterns', {})
+]
 ```
 
 ## Supported Languages
@@ -85,6 +176,14 @@ Custom configuration and analysis:
 
 ```bash
 python examples/advanced_usage.py
+```
+
+### Incremental Parsing
+
+Efficient parsing of code changes:
+
+```bash
+python examples/incremental_parsing.py
 ```
 
 ### RAG Integration
@@ -142,6 +241,28 @@ chunker = CodeChunker(config=None)
 - `parse(code: str, language: str) -> ParseResult`: Parse a code string
 - `parse_file(file_path: Union[str, Path]) -> ParseResult`: Parse a file
 - `parse_directory(directory: Union[str, Path], recursive: bool = True, extensions: Optional[List[str]] = None) -> List[ParseResult]`: Parse a directory
+
+### IncrementalParser
+
+For efficient incremental parsing.
+
+```python
+parser = IncrementalParser(chunker=None)
+```
+
+#### Methods
+
+- `full_parse(file_path: str) -> ParseResult`: Perform a full parse and cache the result
+- `parse_incremental(file_path: str, changes: List[Tuple[int, int, str]]) -> ParseResult`: Parse incrementally based on changes
+- `invalidate_cache(file_path: Optional[str] = None) -> None`: Invalidate cache for a file or all files
+
+#### How Incremental Parsing Works
+
+1. **Initial Parse**: The first parse of a file is a full parse, which is cached
+2. **Change Detection**: When changes are made, only affected code regions are identified
+3. **Selective Reparsing**: Only affected chunks are reparsed, preserving the rest
+4. **Result Merging**: Updated chunks are merged with unchanged chunks
+5. **Smart Caching**: Results are cached for future incremental updates
 
 ### ParseResult
 

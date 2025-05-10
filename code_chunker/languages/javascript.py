@@ -15,9 +15,13 @@ class JavaScriptParser(LanguageParser):
             'function': re.compile(r'function\s+(\w+)\s*\([^)]*\)\s*{'),
             'arrow_function': re.compile(r'(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>'),
             'class': re.compile(r'class\s+(\w+)(?:\s+extends\s+\w+)?\s*{'),
-            'import': re.compile(r'import\s+(?:\{[^}]*\}|\w+)\s+from\s+[\'"][^\'"]+[\'"]'),
-            'export': re.compile(r'export\s+(?:default\s+)?(?:class|function|const|let|var)'),
+            'import': re.compile(r'import\s+(?:(.+?)\s+from\s+|(\{[^}]*\})\s+from\s+)?[\'"](.*?)[\'"]'),
+            'export': re.compile(r'export\s+(?:default\s+)?(?:class|function|const|let|var)\s+(\w+)'),
         }
+    
+    def parse(self, code: str) -> List[CodeChunk]:
+        """Parse JavaScript code and extract chunks"""
+        return self.extract_chunks(code)
     
     def extract_chunks(self, code: str) -> List[CodeChunk]:
         """Parse JavaScript code"""
@@ -96,26 +100,67 @@ class JavaScriptParser(LanguageParser):
         """Extract import statements"""
         imports = []
         
-        for match in self._get_patterns()['import'].finditer(code):
-            default_import = match.group(1)
-            named_imports = match.group(2)
-            module = match.group(3)
-            line_number = code[:match.start()].count('\n')
+        # 正则表达式匹配不同类型的导入
+        import_patterns = [
+            # 默认导入: import React from 'react'
+            re.compile(r'import\s+(\w+)\s+from\s+[\'"]([^\'"]*)[\'"]\s*;?'),
             
-            names = []
-            if default_import:
-                names.append(default_import.strip())
-            if named_imports:
-                names.extend([
-                    name.strip() 
-                    for name in named_imports.split(',')
-                ])
+            # 命名导入: import { useState, useEffect } from 'react'
+            re.compile(r'import\s+\{([^}]*)\}\s+from\s+[\'"]([^\'"]*)[\'"]\s*;?'),
             
-            imports.append(Import(
-                module=module,
-                names=names,
-                line_number=line_number
-            ))
+            # 命名空间导入: import * as utils from './utils'
+            re.compile(r'import\s+\*\s+as\s+(\w+)\s+from\s+[\'"]([^\'"]*)[\'"]\s*;?'),
+            
+            # 简单导入: import './styles.css'
+            re.compile(r'import\s+[\'"]([^\'"]*)[\'"]'),
+        ]
+        
+        # 处理每种导入模式
+        for pattern in import_patterns:
+            for match in pattern.finditer(code):
+                if pattern == import_patterns[0]:  # 默认导入
+                    name = match.group(1)
+                    module = match.group(2)
+                    imports.append(Import(
+                        module=module,
+                        names=[name],
+                        line_number=code[:match.start()].count('\n')
+                    ))
+                elif pattern == import_patterns[1]:  # 命名导入
+                    names_str = match.group(1)
+                    module = match.group(2)
+                    # 处理命名导入中的别名
+                    names = []
+                    for name in names_str.split(','):
+                        name = name.strip()
+                        if ' as ' in name:
+                            name = name.split(' as ')[0].strip()
+                        if name:
+                            names.append(name)
+                    
+                    imports.append(Import(
+                        module=module,
+                        names=names,
+                        line_number=code[:match.start()].count('\n')
+                    ))
+                elif pattern == import_patterns[2]:  # 命名空间导入
+                    name = match.group(1)
+                    module = match.group(2)
+                    imports.append(Import(
+                        module=module,
+                        names=[name],
+                        line_number=code[:match.start()].count('\n'),
+                        alias='*'
+                    ))
+                else:  # 简单导入
+                    module = match.group(1)
+                    # 对CSS文件使用特殊处理
+                    name = 'css' if module.endswith('.css') else 'module'
+                    imports.append(Import(
+                        module=module,
+                        names=[name],
+                        line_number=code[:match.start()].count('\n')
+                    ))
         
         return imports
     
